@@ -10,6 +10,7 @@
 #include "Utilities/safe_ptr.h"
 #include "Utilities/SimpleLock.h"
 #include "Utilities/VirtualFile.h"
+#include <thread>
 
 class Debugger;
 class DebugHud;
@@ -68,7 +69,11 @@ private:
 	//This prevents the secondary console from interacting with the debugger (because this does not work properly at the moment)
 	Debugger* _internalDebugger = nullptr;
 
+#ifdef LIBRETRO
+   unique_ptr<std::thread> _emuThread;
+#else
 	unique_ptr<thread> _emuThread;
+#endif
 	unique_ptr<AudioPlayerHud> _audioPlayerHud;
 	safe_ptr<Debugger> _debugger;
 	shared_ptr<SystemActionManager> _systemActionManager;
@@ -91,8 +96,13 @@ private:
 	const shared_ptr<GameClient> _gameClient;
 	const shared_ptr<RewindManager> _rewindManager;
 
+#ifdef LIBRETRO
+   thread_local static std::thread::id _currentThreadId;
+   std::thread::id _emulationThreadId;
+#else
 	thread_local static thread::id _currentThreadId;
 	thread::id _emulationThreadId;
+#endif
 
 	atomic<uint32_t> _lockCounter;
 	SimpleLock _runLock;
@@ -130,6 +140,13 @@ private:
 	//This is needed until the debugger tools are able to handle debugging 2 identical
 	//consoles at the same time.
 	bool _isDebuggerDisabled = false;
+
+#ifdef LIBRETRO
+	// When building as a libretro core, this flag allows the frontend (Libretro)
+	// to request that the next Gameboy-created console be allowed to run in
+	// Super Game Boy mode. It's reset after being consumed by TryLoadRom.
+	bool _libretroAllowSgbNextLoad = false;
+#endif
 
 	void WaitForLock();
 	void WaitForPauseEnd();
@@ -235,7 +252,11 @@ public:
 	bool IsDebugging() { return !!_debugger; }
 	Debugger* InternalGetDebugger() { return _debugger.get(); }
 
+#ifdef LIBRETRO
+   std::thread::id GetEmulationThreadId() { return _emulationThreadId; }
+#else
 	thread::id GetEmulationThreadId() { return _emulationThreadId; }
+#endif
 	bool IsEmulationThread();
 
 	int32_t GetStopCode() { return _stopCode; }
@@ -347,6 +368,11 @@ public:
 	void BreakIfDebugging(CpuType sourceCpu, BreakSource source);
 
 	void SetDebuggerDisabled(bool disabled);
+
+#ifdef LIBRETRO
+	// Set a flag indicating the next created Gameboy console should allow SGB mode.
+	void SetAllowSgbForNextLoad(bool allow);
+#endif
 };
 
 enum class HashType

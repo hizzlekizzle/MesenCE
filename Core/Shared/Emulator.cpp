@@ -33,6 +33,7 @@
 #include "SNES/SnesDefaultVideoFilter.h"
 #include "NES/NesConsole.h"
 #include "Gameboy/Gameboy.h"
+#include <type_traits>
 #include "PCE/PceConsole.h"
 #include "SMS/SmsConsole.h"
 #include "GBA/GbaConsole.h"
@@ -253,6 +254,31 @@ void Emulator::ProcessEndOfFrame()
 	bool useSpinWait = !_settings->GetVideoConfig().DisableHighPrecisionFramePacing && (_settings->GetEmulationSpeed() >= 50 && _settings->GetEmulationSpeed() <= 200);
 
 	if(!_isRunAheadFrame) {
+#ifdef LIBRETRO
+		// When the emulator is driven externally (for example, via the libretro
+		// front-end) the main Run() loop is not executed and _frameLimiter may
+		// not have been created. Guard against a null pointer here so
+		// ProcessEndOfFrame is safe when frames are stepped manually.
+		if(_frameLimiter) {
+			_frameLimiter->ProcessFrame();
+			while(_frameLimiter->WaitForNextFrame(useSpinWait)) {
+				if(_stopFlag || _frameDelay != GetFrameDelay() || _paused || _pauseOnNextFrame || _lockCounter > 0) {
+					//Need to process another event, stop sleeping
+					break;
+				}
+			}
+
+			double newFrameDelay = GetFrameDelay();
+			if(newFrameDelay != _frameDelay) {
+				_frameDelay = newFrameDelay;
+				_frameLimiter->SetDelay(_frameDelay);
+			}
+		}
+
+		if(_console) {
+			_console->GetControlManager()->ProcessEndOfFrame();
+		}
+#else
 		_frameLimiter->ProcessFrame();
 		while(_frameLimiter->WaitForNextFrame(useSpinWait)) {
 			if(_stopFlag || _frameDelay != GetFrameDelay() || _paused || _pauseOnNextFrame || _lockCounter > 0) {
@@ -268,6 +294,7 @@ void Emulator::ProcessEndOfFrame()
 		}
 
 		_console->GetControlManager()->ProcessEndOfFrame();
+#endif
 	}
 	_frameRunning = false;
 }
@@ -594,7 +621,17 @@ void Emulator::TryLoadRom(VirtualFile& romFile, LoadRomResult& result, unique_pt
 			bool hasBattery = _batteryManager->HasBattery();
 			_batteryManager->Initialize(FolderUtilities::GetFilename(romFile.GetFileName(), false));
 
+#ifdef LIBRETRO
+			if constexpr (std::is_same<T, Gameboy>::value) {
+				bool allow = _libretroAllowSgbNextLoad;
+				_libretroAllowSgbNextLoad = false;
+				console.reset(new T(this, allow));
+			} else {
+				console.reset(new T(this));
+			}
+#else
 			console.reset(new T(this));
+#endif
 			result = console->LoadRom(romFile);
 
 			if(result != LoadRomResult::Success) {
@@ -1212,6 +1249,13 @@ void Emulator::SetDebuggerDisabled(bool disabled)
 	_isDebuggerDisabled = disabled;
 	_internalDebugger = disabled ? nullptr : _debugger.get();
 }
+
+#ifdef LIBRETRO
+void Emulator::SetAllowSgbForNextLoad(bool allow)
+{
+	_libretroAllowSgbNextLoad = allow;
+}
+#endif
 
 template void Emulator::AddDebugEvent<CpuType::Snes>(DebugEventType evtType);
 template void Emulator::AddDebugEvent<CpuType::Gameboy>(DebugEventType evtType);

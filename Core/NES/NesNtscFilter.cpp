@@ -47,9 +47,14 @@ void NesNtscFilter::OnBeforeApplyFilter()
 
 	shared_ptr<IConsole> console = _emu->GetConsole();
 	PpuModel model = ((NesConsole*)console.get())->GetPpu()->GetPpuModel();
-
+#ifdef LIBRETRO
+	VideoConfig& videoCfg = _emu->GetSettings()->GetVideoConfig();
+	if(GenericNtscFilter::NtscFilterOptionsChanged(_ntscSetup, videoCfg) || model != _ppuModel || memcmp(_nesConfig.UserPalette, nesCfg.UserPalette, sizeof(nesCfg.UserPalette)) != 0) {
+		GenericNtscFilter::InitNtscFilter(_ntscSetup, videoCfg);
+#else
 	if(GenericNtscFilter::NtscFilterOptionsChanged(_ntscSetup, _emu->GetSettings()->GetVideoConfig()) || model != _ppuModel || memcmp(_nesConfig.UserPalette, nesCfg.UserPalette, sizeof(nesCfg.UserPalette)) != 0) {
 		GenericNtscFilter::InitNtscFilter(_ntscSetup, _emu->GetSettings()->GetVideoConfig());
+#endif
 
 		uint32_t palette[512];
 		NesDefaultVideoFilter::GetFullPalette(palette, nesCfg, model);

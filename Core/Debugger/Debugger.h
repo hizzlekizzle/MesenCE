@@ -4,6 +4,14 @@
 #include "Debugger/DebugUtilities.h"
 #include "Debugger/DebugTypes.h"
 #include "Debugger/DebuggerFeatures.h"
+#include <list>
+#ifndef __noinline
+# ifdef _MSC_VER
+#  define __noinline __declspec(noinline)
+# else
+#  define __noinline __attribute__((noinline))
+# endif
+#endif
 #include "Shared/SettingTypes.h"
 
 class IConsole;

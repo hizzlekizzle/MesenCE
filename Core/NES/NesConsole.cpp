@@ -248,10 +248,17 @@ void NesConsole::LoadHdPack(VirtualFile& romFile)
 
 			shared_ptr<HdPackData> data = _hdData.lock();
 			if(data) {
+#ifdef LIBRETRO
+				fprintf(stderr, "[mesen] LoadHdPack: Loading HD pack data synchronously (LIBRETRO)\n");
+				// Libretro: Load HD pack data synchronously to avoid thread safety issues
+				// (Libretro callbacks are single-threaded, detached threads cause race conditions)
+				data->LoadAsync();
+#else
 				thread asyncLoadData([data]() {
 					data->LoadAsync();
 				});
 				asyncLoadData.detach();
+#endif
 			}
 		}
 	}

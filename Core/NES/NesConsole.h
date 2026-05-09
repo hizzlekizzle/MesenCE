@@ -76,6 +76,7 @@ public:
 	NesMemoryManager* GetMemoryManager() { return _memoryManager.get(); }
 	BaseMapper* GetMapper() { return _mapper.get(); }
 	NesSoundMixer* GetSoundMixer() { return _mixer.get(); }
+	safe_ptr<HdPackData>& GetHdData() { return _hdData; }
 	Emulator* GetEmulator();
 	NesConfig& GetNesConfig();
 

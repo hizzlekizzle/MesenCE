@@ -78,6 +78,14 @@ enum class NtscBisqwitFilterScale
 	_8x,
 };
 
+enum class NtscBlarggPreset
+{
+	Composite = 0,
+	Svideo = 1,
+	Rgb = 2,
+	Monochrome = 3
+};
+
 struct VideoConfig
 {
 	double CustomAspectRatio = 1.0;
@@ -108,6 +116,7 @@ struct VideoConfig
 	bool NtscMergeFields = false;
 
 	NtscBisqwitFilterScale NtscScale = NtscBisqwitFilterScale::_2x;
+	NtscBlarggPreset NtscBlarggPreset_Value = NtscBlarggPreset::Composite;
 	double NtscYFilterLength = 1.0;
 	double NtscIFilterLength = 1.0;
 	double NtscQFilterLength = 1.0;

@@ -46,4 +46,6 @@ public:
 	virtual void SetDisabled(bool disabled) = 0;
 
 	virtual void SetForceFeedback(uint16_t magnitudeRight, uint16_t magnitudeLeft) {}
+
+	// NOTE: in libretro, readiness is handled by the KeyManager wrapper (SetBackendReady/IsReady)
 };

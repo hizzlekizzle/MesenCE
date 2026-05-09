@@ -6,6 +6,9 @@
 #include "Utilities/HexUtilities.h"
 #include "Utilities/SimpleLock.h"
 #include "Utilities/Timer.h"
+#include <sstream>
+
+using std::stringstream;
 
 class BaseHdNesPack;
 

@@ -26,7 +26,16 @@ HdAudioDevice::HdAudioDevice(Emulator* emu, HdPackData* hdData)
 
 HdAudioDevice::~HdAudioDevice()
 {
+#ifdef LIBRETRO
+	if(_emu && _oggMixer) {
+		auto mixer = _emu->GetSoundMixer();
+		if(mixer) {
+			mixer->UnregisterAudioProvider(_oggMixer.get());
+		}
+	}
+#else
 	_emu->GetSoundMixer()->UnregisterAudioProvider(_oggMixer.get());
+#endif
 }
 
 void HdAudioDevice::Serialize(Serializer& s)
