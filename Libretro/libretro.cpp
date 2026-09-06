@@ -7,6 +7,7 @@
 #include <fstream>
 #include <vector>
 #include <iterator>
+#include <cstring>
 #include <sys/stat.h>
 #if __has_include(<filesystem>)
 	#include <filesystem>
@@ -236,7 +237,7 @@ static void logSgbDebugf(const char* fmt, ...)
 	va_start(args, fmt);
 	vsnprintf(buffer, sizeof(buffer), fmt, args);
 	va_end(args);
-
+	 
 	fprintf(stderr, "[libretro] %s\n", buffer);
 	fflush(stderr);
 	if(logCallback) {
@@ -331,7 +332,62 @@ static constexpr const char* MesenSwapDutyCycle = "mesen_swap_duty_cycle";
 static constexpr const char* MesenDisableNoiseModeFlag = "mesen_disable_noise_mode_flag";
 // static constexpr const char* MesenShiftButtonsClockwise = "mesen_shift_buttons_clockwise";
 static constexpr const char* MesenAudioSampleRate = "mesen_audio_sample_rate";
-
+static constexpr const char* MesenGameboyModel = "mesen_gameboy_model";
+static constexpr const char* MesenGameboyBlendFrames = "mesen_gameboy_blend_frames";
+static constexpr const char* MesenGameboyAdjustColors = "mesen_gameboy_adjust_colors";
+static constexpr const char* MesenGameboyDisableBackground = "mesen_gameboy_disable_background";
+static constexpr const char* MesenGameboyDisableSprites = "mesen_gameboy_disable_sprites";
+static constexpr const char* MesenGameboyRemoveSpriteLimit = "mesen_gameboy_remove_sprite_limit";
+static constexpr const char* MesenGameboyHideSgbBorders = "mesen_gameboy_hide_sgb_borders";
+static constexpr const char* MesenGbaSkipBootScreen = "mesen_gba_skip_boot_screen";
+static constexpr const char* MesenGbaBlendFrames = "mesen_gba_blend_frames";
+static constexpr const char* MesenGbaAdjustColors = "mesen_gba_adjust_colors";
+static constexpr const char* MesenGbaDisableSprites = "mesen_gba_disable_sprites";
+static constexpr const char* MesenGbaDisableBackground = "mesen_gba_disable_background";
+static constexpr const char* MesenGbaHideBgLayer1 = "mesen_gba_hide_bg_layer_1";
+static constexpr const char* MesenGbaHideBgLayer2 = "mesen_gba_hide_bg_layer_2";
+static constexpr const char* MesenGbaHideBgLayer3 = "mesen_gba_hide_bg_layer_3";
+static constexpr const char* MesenGbaHideBgLayer4 = "mesen_gba_hide_bg_layer_4";
+static constexpr const char* MesenGbaDisableFrameSkipping = "mesen_gba_disable_frame_skipping";
+static constexpr const char* MesenGbaSaveType = "mesen_gba_save_type";
+static constexpr const char* MesenGbaRtcType = "mesen_gba_rtc_type";
+static constexpr const char* MesenPceConsoleType = "mesen_pce_console_type";
+static constexpr const char* MesenPceCdRomType = "mesen_pce_cdrom_type";
+static constexpr const char* MesenPceDisableSprites = "mesen_pce_disable_sprites";
+static constexpr const char* MesenPceDisableSpritesVdc2 = "mesen_pce_disable_sprites_vdc2";
+static constexpr const char* MesenPceDisableBackground = "mesen_pce_disable_background";
+static constexpr const char* MesenPceDisableBackgroundVdc2 = "mesen_pce_disable_background_vdc2";
+static constexpr const char* MesenPceRemoveSpriteLimit = "mesen_pce_remove_sprite_limit";
+static constexpr const char* MesenPceDisableFrameSkipping = "mesen_pce_disable_frame_skipping";
+static constexpr const char* MesenPceForceFixedResolution = "mesen_pce_force_fixed_resolution";
+static constexpr const char* MesenPceUseHuc6280Audio = "mesen_pce_use_huc6280_audio";
+static constexpr const char* MesenSmsUseSgPalette = "mesen_sms_use_sg_palette";
+static constexpr const char* MesenSmsGameGearBlendFrames = "mesen_sms_gg_blend_frames";
+static constexpr const char* MesenSmsDisableSprites = "mesen_sms_disable_sprites";
+static constexpr const char* MesenSmsDisableBackground = "mesen_sms_disable_background";
+static constexpr const char* MesenSmsRemoveSpriteLimit = "mesen_sms_remove_sprite_limit";
+static constexpr const char* MesenSmsFmAudio = "mesen_sms_fm_audio";
+static constexpr const char* MesenSnesColorCorrection = "mesen_snes_color_correction";
+static constexpr const char* MesenSnesHighResBlendMode = "mesen_snes_high_res_blend_mode";
+static constexpr const char* MesenSnesDeinterlaceMode = "mesen_snes_deinterlace_mode";
+static constexpr const char* MesenSnesHideBgLayer1 = "mesen_snes_hide_bg_layer_1";
+static constexpr const char* MesenSnesHideBgLayer2 = "mesen_snes_hide_bg_layer_2";
+static constexpr const char* MesenSnesHideBgLayer3 = "mesen_snes_hide_bg_layer_3";
+static constexpr const char* MesenSnesHideBgLayer4 = "mesen_snes_hide_bg_layer_4";
+static constexpr const char* MesenSnesHideSprites = "mesen_snes_hide_sprites";
+static constexpr const char* MesenSnesRemoveSpriteLimit = "mesen_snes_remove_sprite_limit";
+static constexpr const char* MesenSnesForceFixedResolution = "mesen_snes_force_fixed_resolution";
+static constexpr const char* MesenSnesDisableFrameSkipping = "mesen_snes_disable_frame_skipping";
+static constexpr const char* MesenSnesEnableStrictBoardMappings = "mesen_snes_enable_strict_board_mappings";
+static constexpr const char* MesenSnesRandomizePowerOnState = "mesen_snes_randomize_power_on_state";
+static constexpr const char* MesenWsModel = "mesen_ws_model";
+static constexpr const char* MesenWsAutoRotate = "mesen_ws_auto_rotate";
+static constexpr const char* MesenWsBlendFrames = "mesen_ws_blend_frames";
+static constexpr const char* MesenWsLcdAdjustColors = "mesen_ws_lcd_adjust_colors";
+static constexpr const char* MesenWsLcdShowIcons = "mesen_ws_lcd_show_icons";
+static constexpr const char* MesenWsAudioMode = "mesen_ws_audio_mode";
+static constexpr const char* MesenWsDisableSprites = "mesen_ws_disable_sprites";
+	
 uint32_t defaultPalette[0x40] { 0xFF666666, 0xFF002A88, 0xFF1412A7, 0xFF3B00A4, 0xFF5C007E, 0xFF6E0040, 0xFF6C0600, 0xFF561D00, 0xFF333500, 0xFF0B4800, 0xFF005200, 0xFF004F08, 0xFF00404D, 0xFF000000, 0xFF000000, 0xFF000000, 0xFFADADAD, 0xFF155FD9, 0xFF4240FF, 0xFF7527FE, 0xFFA01ACC, 0xFFB71E7B, 0xFFB53120, 0xFF994E00, 0xFF6B6D00, 0xFF388700, 0xFF0C9300, 0xFF008F32, 0xFF007C8D, 0xFF000000, 0xFF000000, 0xFF000000, 0xFFFFFEFF, 0xFF64B0FF, 0xFF9290FF, 0xFFC676FF, 0xFFF36AFF, 0xFFFE6ECC, 0xFFFE8170, 0xFFEA9E22, 0xFFBCBE00, 0xFF88D800, 0xFF5CE430, 0xFF45E082, 0xFF48CDDE, 0xFF4F4F4F, 0xFF000000, 0xFF000000, 0xFFFFFEFF, 0xFFC0DFFF, 0xFFD3D2FF, 0xFFE8C8FF, 0xFFFBC2FF, 0xFFFEC4EA, 0xFFFECCC5, 0xFFF7D8A5, 0xFFE4E594, 0xFFCFEF96, 0xFFBDF4AB, 0xFFB3F3CC, 0xFFB5EBF2, 0xFFB8B8B8, 0xFF000000, 0xFF000000 };
 uint32_t unsaturatedPalette[0x40] { 0xFF6B6B6B, 0xFF001E87, 0xFF1F0B96, 0xFF3B0C87, 0xFF590D61, 0xFF5E0528, 0xFF551100, 0xFF461B00, 0xFF303200, 0xFF0A4800, 0xFF004E00, 0xFF004619, 0xFF003A58, 0xFF000000, 0xFF000000, 0xFF000000, 0xFFB2B2B2, 0xFF1A53D1, 0xFF4835EE, 0xFF7123EC, 0xFF9A1EB7, 0xFFA51E62, 0xFFA52D19, 0xFF874B00, 0xFF676900, 0xFF298400, 0xFF038B00, 0xFF008240, 0xFF007891, 0xFF000000, 0xFF000000, 0xFF000000, 0xFFFFFFFF, 0xFF63ADFD, 0xFF908AFE, 0xFFB977FC, 0xFFE771FE, 0xFFF76FC9, 0xFFF5836A, 0xFFDD9C29, 0xFFBDB807, 0xFF84D107, 0xFF5BDC3B, 0xFF48D77D, 0xFF48CCCE, 0xFF555555, 0xFF000000, 0xFF000000, 0xFFFFFFFF, 0xFFC4E3FE, 0xFFD7D5FE, 0xFFE6CDFE, 0xFFF9CAFE, 0xFFFEC9F0, 0xFFFED1C7, 0xFFF7DCAC, 0xFFE8E89C, 0xFFD1F29D, 0xFFBFF4B1, 0xFFB7F5CD, 0xFFB7F0EE, 0xFFBEBEBE, 0xFF000000, 0xFF000000 };
 uint32_t yuvPalette[0x40] { 0xFF666666, 0xFF002A88, 0xFF1412A7, 0xFF3B00A4, 0xFF5C007E, 0xFF6E0040, 0xFF6C0700, 0xFF561D00, 0xFF333500, 0xFF0C4800, 0xFF005200, 0xFF004C18, 0xFF003E5B, 0xFF000000, 0xFF000000, 0xFF000000, 0xFFADADAD, 0xFF155FD9, 0xFF4240FF, 0xFF7527FE, 0xFFA01ACC, 0xFFB71E7B, 0xFFB53120, 0xFF994E00, 0xFF6B6D00, 0xFF388700, 0xFF0D9300, 0xFF008C47, 0xFF007AA0, 0xFF000000, 0xFF000000, 0xFF000000, 0xFFFFFFFF, 0xFF64B0FF, 0xFF9290FF, 0xFFC676FF, 0xFFF26AFF, 0xFFFF6ECC, 0xFFFF8170, 0xFFEA9E22, 0xFFBCBE00, 0xFF88D800, 0xFF5CE430, 0xFF45E082, 0xFF48CDDE, 0xFF4F4F4F, 0xFF000000, 0xFF000000, 0xFFFFFFFF, 0xFFC0DFFF, 0xFFD3D2FF, 0xFFE8C8FF, 0xFFFAC2FF, 0xFFFFC4EA, 0xFFFFCCC5, 0xFFF7D8A5, 0xFFE4E594, 0xFFCFEF96, 0xFFBDF4AB, 0xFFB3F3CC, 0xFFB5EBF2, 0xFFB8B8B8, 0xFF000000, 0xFF000000 };
@@ -343,7 +399,146 @@ uint32_t pvmStylePalette[0x40] { 0xFF696964, 0xFF001774, 0xFF28007D, 0xFF3E006D,
 uint32_t sonyCxa2025AsPalette[0x40] { 0xFF585858, 0xFF00238C, 0xFF00139B, 0xFF2D0585, 0xFF5D0052, 0xFF7A0017, 0xFF7A0800, 0xFF5F1800, 0xFF352A00, 0xFF093900, 0xFF003F00, 0xFF003C22, 0xFF00325D, 0xFF000000, 0xFF000000, 0xFF000000, 0xFFA1A1A1, 0xFF0053EE, 0xFF153CFE, 0xFF6028E4, 0xFFA91D98, 0xFFD41E41, 0xFFD22C00, 0xFFAA4400, 0xFF6C5E00, 0xFF2D7300, 0xFF007D06, 0xFF007852, 0xFF0069A9, 0xFF000000, 0xFF000000, 0xFF000000, 0xFFFFFFFF, 0xFF1FA5FE, 0xFF5E89FE, 0xFFB572FE, 0xFFFE65F6, 0xFFFE6790, 0xFFFE773C, 0xFFFE9308, 0xFFC4B200, 0xFF79CA10, 0xFF3AD54A, 0xFF11D1A4, 0xFF06BFFE, 0xFF424242, 0xFF000000, 0xFF000000, 0xFFFFFFFF, 0xFFA0D9FE, 0xFFBDCCFE, 0xFFE1C2FE, 0xFFFEBCFB, 0xFFFEBDD0, 0xFFFEC5A9, 0xFFFED18E, 0xFFE9DE86, 0xFFC7E992, 0xFFA8EEB0, 0xFF95ECD9, 0xFF91E4FE, 0xFFACACAC, 0xFF000000, 0xFF000000 };
 uint32_t wavebeamPalette[0x40] { 0xFF6B6B6B, 0xFF001B88, 0xFF21009A, 0xFF40008C, 0xFF600067, 0xFF64001E, 0xFF590800, 0xFF481600, 0xFF283600, 0xFF004500, 0xFF004908, 0xFF00421D, 0xFF003659, 0xFF000000, 0xFF000000, 0xFF000000, 0xFFB4B4B4, 0xFF1555D3, 0xFF4337EF, 0xFF7425DF, 0xFF9C19B9, 0xFFAC0F64, 0xFFAA2C00, 0xFF8A4B00, 0xFF666B00, 0xFF218300, 0xFF008A00, 0xFF008144, 0xFF007691, 0xFF000000, 0xFF000000, 0xFF000000, 0xFFFFFFFF, 0xFF63B2FF, 0xFF7C9CFF, 0xFFC07DFE, 0xFFE977FF, 0xFFF572CD, 0xFFF4886B, 0xFFDDA029, 0xFFBDBD0A, 0xFF89D20E, 0xFF5CDE3E, 0xFF4BD886, 0xFF4DCFD2, 0xFF525252, 0xFF000000, 0xFF000000, 0xFFFFFFFF, 0xFFBCDFFF, 0xFFD2D2FF, 0xFFE1C8FF, 0xFFEFC7FF, 0xFFFFC3E1, 0xFFFFCAC6, 0xFFF2DAAD, 0xFFEBE3A0, 0xFFD2EDA2, 0xFFBCF4B4, 0xFFB5F1CE, 0xFFB6ECF1, 0xFFBFBFBF, 0xFF000000, 0xFF000000 };
 
-extern "C" {
+	static ConsoleType GetCurrentConsoleType()
+	{
+		if(_emu && _emu->GetConsole()) {
+			return _emu->GetConsole()->GetConsoleType();
+		}
+		return ConsoleType::Nes;
+	}
+
+	static bool IsOptionVisibleForCurrentConsole(const char* key)
+	{
+		if(!key) {
+			return true;
+		}
+		ConsoleType consoleType = GetCurrentConsoleType();
+		auto matches = [key](const char* option) {
+			return std::strcmp(key, option) == 0;
+		};
+
+		if(consoleType == ConsoleType::Nes) {
+			return matches(MesenRegion) || matches(MesenRamState) || matches(MesenOverclock) || matches(MesenOverclockType) ||
+				matches(MesenFdsAutoSelectDisk) || matches(MesenFdsFastForwardLoad) || matches(MesenAllowInvalidInput) ||
+				matches(MesenRandomizeMapperPowerOnState) || matches(MesenRandomizeCpuPpuAlignment) || matches(MesenPalette) ||
+				matches(MesenNtscFilter) || matches(MesenEnablePalBorders) || matches(MesenFakeStereo) ||
+				matches(MesenMuteTriangleUltrasonic) || matches(MesenReduceDmcPopping) || matches(MesenSwapDutyCycle) ||
+				matches(MesenDisableNoiseModeFlag) || matches(MesenAudioSampleRate) || matches(MesenControllerTurboSpeed) ||
+				matches(MesenSpritesEnabled) || matches(MesenBackgroundEnabled) || matches(MesenDisableGameGenieBusConflicts) ||
+				matches(MesenSpriteLimit);
+		}
+
+		if(consoleType == ConsoleType::Snes) {
+			return matches(MesenRegion) || matches(MesenRamState) || matches(MesenOverclock) || matches(MesenOverclockType) ||
+				matches(MesenPalette) || matches(MesenNtscFilter) || matches(MesenEnablePalBorders) || matches(MesenAudioSampleRate) ||
+				matches(MesenControllerTurboSpeed) || matches(MesenSpritesEnabled) || matches(MesenBackgroundEnabled) ||
+				matches(MesenSpriteLimit) || matches(MesenAllowInvalidInput) || matches(MesenRandomizeMapperPowerOnState) ||
+				matches(MesenRandomizeCpuPpuAlignment) || matches(MesenFakeStereo) || matches(MesenSnesColorCorrection) ||
+				matches(MesenSnesHighResBlendMode) || matches(MesenSnesDeinterlaceMode) || matches(MesenSnesHideBgLayer1) ||
+				matches(MesenSnesHideBgLayer2) || matches(MesenSnesHideBgLayer3) || matches(MesenSnesHideBgLayer4) ||
+				matches(MesenSnesHideSprites) || matches(MesenSnesRemoveSpriteLimit) || matches(MesenSnesForceFixedResolution) ||
+				matches(MesenSnesDisableFrameSkipping) || matches(MesenSnesEnableStrictBoardMappings) ||
+				matches(MesenSnesRandomizePowerOnState);
+		}
+
+		if(consoleType == ConsoleType::Gameboy) {
+			return matches(MesenRegion) || matches(MesenRamState) || matches(MesenOverclock) || matches(MesenOverclockType) ||
+				matches(MesenPalette) || matches(MesenAudioSampleRate) || matches(MesenControllerTurboSpeed) ||
+				matches(MesenSpritesEnabled) || matches(MesenBackgroundEnabled) || matches(MesenSpriteLimit) ||
+				matches(MesenAllowInvalidInput) || matches(MesenRandomizeMapperPowerOnState) || matches(MesenRandomizeCpuPpuAlignment) ||
+				matches(MesenFakeStereo) || matches(MesenGameboyModel) || matches(MesenGameboyBlendFrames) ||
+				matches(MesenGameboyAdjustColors) || matches(MesenGameboyDisableBackground) || matches(MesenGameboyDisableSprites) ||
+				matches(MesenGameboyRemoveSpriteLimit) || matches(MesenGameboyHideSgbBorders);
+		}
+
+		if(consoleType == ConsoleType::Gba) {
+			return matches(MesenRegion) || matches(MesenRamState) || matches(MesenOverclock) || matches(MesenOverclockType) ||
+				matches(MesenPalette) || matches(MesenAudioSampleRate) || matches(MesenControllerTurboSpeed) ||
+				matches(MesenSpriteLimit) || matches(MesenSpritesEnabled) || matches(MesenBackgroundEnabled) ||
+				matches(MesenAllowInvalidInput) || matches(MesenRandomizeMapperPowerOnState) || matches(MesenRandomizeCpuPpuAlignment) ||
+				matches(MesenFakeStereo) || matches(MesenGbaSkipBootScreen) || matches(MesenGbaBlendFrames) || matches(MesenGbaAdjustColors) ||
+				matches(MesenGbaDisableSprites) || matches(MesenGbaDisableBackground) || matches(MesenGbaHideBgLayer1) ||
+				matches(MesenGbaHideBgLayer2) || matches(MesenGbaHideBgLayer3) || matches(MesenGbaHideBgLayer4) ||
+				matches(MesenGbaDisableFrameSkipping) || matches(MesenGbaSaveType) || matches(MesenGbaRtcType);
+		}
+
+		if(consoleType == ConsoleType::PcEngine) {
+			return matches(MesenRegion) || matches(MesenRamState) || matches(MesenOverclock) || matches(MesenOverclockType) ||
+				matches(MesenPalette) || matches(MesenAudioSampleRate) || matches(MesenControllerTurboSpeed) ||
+				matches(MesenSpriteLimit) || matches(MesenSpritesEnabled) || matches(MesenBackgroundEnabled) ||
+				matches(MesenAllowInvalidInput) || matches(MesenRandomizeMapperPowerOnState) || matches(MesenRandomizeCpuPpuAlignment) ||
+				matches(MesenFakeStereo) || matches(MesenPceConsoleType) || matches(MesenPceCdRomType) || matches(MesenPceDisableSprites) ||
+				matches(MesenPceDisableSpritesVdc2) || matches(MesenPceDisableBackground) || matches(MesenPceDisableBackgroundVdc2) ||
+				matches(MesenPceRemoveSpriteLimit) || matches(MesenPceDisableFrameSkipping) || matches(MesenPceForceFixedResolution) ||
+				matches(MesenPceUseHuc6280Audio);
+		}
+
+		if(consoleType == ConsoleType::Sms) {
+			return matches(MesenRegion) || matches(MesenRamState) || matches(MesenOverclock) || matches(MesenOverclockType) ||
+				matches(MesenPalette) || matches(MesenAudioSampleRate) || matches(MesenControllerTurboSpeed) ||
+				matches(MesenSpriteLimit) || matches(MesenSpritesEnabled) || matches(MesenBackgroundEnabled) ||
+				matches(MesenAllowInvalidInput) || matches(MesenRandomizeMapperPowerOnState) || matches(MesenRandomizeCpuPpuAlignment) ||
+				matches(MesenFakeStereo) || matches(MesenNtscFilter) || matches(MesenSmsUseSgPalette) || matches(MesenSmsGameGearBlendFrames) ||
+				matches(MesenSmsDisableSprites) || matches(MesenSmsDisableBackground) || matches(MesenSmsRemoveSpriteLimit) ||
+				matches(MesenSmsFmAudio);
+		}
+
+		if(consoleType == ConsoleType::Ws) {
+			return matches(MesenRegion) || matches(MesenRamState) || matches(MesenOverclock) || matches(MesenOverclockType) ||
+				matches(MesenPalette) || matches(MesenAudioSampleRate) || matches(MesenControllerTurboSpeed) ||
+				matches(MesenSpriteLimit) || matches(MesenSpritesEnabled) || matches(MesenBackgroundEnabled) ||
+				matches(MesenAllowInvalidInput) || matches(MesenRandomizeMapperPowerOnState) || matches(MesenRandomizeCpuPpuAlignment) ||
+				matches(MesenFakeStereo) || matches(MesenWsModel) || matches(MesenWsAutoRotate) || matches(MesenWsBlendFrames) ||
+				matches(MesenWsLcdAdjustColors) || matches(MesenWsLcdShowIcons) || matches(MesenWsAudioMode) || matches(MesenWsDisableSprites);
+		}
+
+		return true;
+	}
+
+	static void UpdateCoreOptionDisplay()
+	{
+		if(!env_cb) {
+			return;
+		}
+
+		static const char* keys[] = {
+			MesenRegion, MesenRamState, MesenOverclock, MesenOverclockType,
+			MesenFdsAutoSelectDisk, MesenFdsFastForwardLoad,
+			MesenAllowInvalidInput, MesenRandomizeMapperPowerOnState, MesenRandomizeCpuPpuAlignment,
+			MesenPalette, MesenNtscFilter, MesenEnablePalBorders,
+			MesenFakeStereo, MesenMuteTriangleUltrasonic, MesenReduceDmcPopping,
+			MesenSwapDutyCycle, MesenDisableNoiseModeFlag, MesenAudioSampleRate,
+			MesenControllerTurboSpeed, MesenSpritesEnabled, MesenBackgroundEnabled,
+			MesenDisableGameGenieBusConflicts, MesenSpriteLimit,
+			MesenSnesColorCorrection, MesenSnesHighResBlendMode, MesenSnesDeinterlaceMode,
+			MesenSnesHideBgLayer1, MesenSnesHideBgLayer2, MesenSnesHideBgLayer3,
+			MesenSnesHideBgLayer4, MesenSnesHideSprites, MesenSnesRemoveSpriteLimit,
+			MesenSnesForceFixedResolution, MesenSnesDisableFrameSkipping,
+			MesenSnesEnableStrictBoardMappings, MesenSnesRandomizePowerOnState,
+			MesenGameboyModel, MesenGameboyBlendFrames, MesenGameboyAdjustColors,
+			MesenGameboyDisableBackground, MesenGameboyDisableSprites, MesenGameboyRemoveSpriteLimit,
+			MesenGameboyHideSgbBorders,
+			MesenGbaSkipBootScreen, MesenGbaBlendFrames, MesenGbaAdjustColors,
+			MesenGbaDisableSprites, MesenGbaDisableBackground, MesenGbaHideBgLayer1,
+			MesenGbaHideBgLayer2, MesenGbaHideBgLayer3, MesenGbaHideBgLayer4,
+			MesenGbaDisableFrameSkipping, MesenGbaSaveType, MesenGbaRtcType,
+			MesenPceConsoleType, MesenPceCdRomType, MesenPceDisableSprites,
+			MesenPceDisableSpritesVdc2, MesenPceDisableBackground, MesenPceDisableBackgroundVdc2,
+			MesenPceRemoveSpriteLimit, MesenPceDisableFrameSkipping, MesenPceForceFixedResolution,
+			MesenPceUseHuc6280Audio,
+			MesenSmsUseSgPalette, MesenSmsGameGearBlendFrames, MesenSmsDisableSprites,
+			MesenSmsDisableBackground, MesenSmsRemoveSpriteLimit, MesenSmsFmAudio,
+			MesenWsModel, MesenWsAutoRotate, MesenWsBlendFrames, MesenWsLcdAdjustColors,
+			MesenWsLcdShowIcons, MesenWsAudioMode, MesenWsDisableSprites
+		};
+
+		for(const char* key : keys) {
+			retro_core_option_display display = { key, IsOptionVisibleForCurrentConsole(key) };
+			env_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &display);
+		}
+	}
+
+	extern "C" {
 	void logMessage(retro_log_level level, const char* message)
 	{
 		if(logCallback) {
@@ -549,6 +744,183 @@ extern "C" {
 				{{ "48000", "48000 Hz" }, { "96000", "96000 Hz" }, { "11025", "11025 Hz" }, { "22050", "22050 Hz" }, { "44100", "44100 Hz" }, { NULL, NULL }},
 				"44100" },
 
+			// SNES options
+			{ MesenSnesColorCorrection, "Video - SNES Color Correction", "Color Correction", "Select SNES color correction mode", NULL, "video",
+				{{ "None", "None" }, { "NTSC Black Level", "NTSC Black Level" }, { "Deep Black Boost", "Deep Black Boost" }, { NULL, NULL }},
+				"None" },
+			{ MesenSnesHighResBlendMode, "Video - SNES High-Res Blend Mode", "High-Res Blend Mode", "Select the SNES high-resolution blend mode", NULL, "video",
+				{{ "None", "None" }, { "Blend All", "Blend All" }, { "Blend Even/Odd", "Blend Even/Odd" }, { NULL, NULL }},
+				"None" },
+			{ MesenSnesDeinterlaceMode, "Video - SNES Deinterlace Mode", "Deinterlace Mode", "Select the SNES deinterlace mode", NULL, "video",
+				{{ "Weave", "Weave" }, { "Bob Blend", "Bob Blend" }, { "Bob", "Bob" }, { "Current Field", "Current Field" }, { NULL, NULL }},
+				"Weave" },
+			{ MesenSnesHideBgLayer1, "Enhancements - SNES Hide BG Layer 1", "Hide BG Layer 1", "Hide SNES background layer 1", NULL, "enhancements",
+				{{ "disabled", "Off" }, { "enabled", "On" }, { NULL, NULL }},
+				"disabled" },
+			{ MesenSnesHideBgLayer2, "Enhancements - SNES Hide BG Layer 2", "Hide BG Layer 2", "Hide SNES background layer 2", NULL, "enhancements",
+				{{ "disabled", "Off" }, { "enabled", "On" }, { NULL, NULL }},
+				"disabled" },
+			{ MesenSnesHideBgLayer3, "Enhancements - SNES Hide BG Layer 3", "Hide BG Layer 3", "Hide SNES background layer 3", NULL, "enhancements",
+				{{ "disabled", "Off" }, { "enabled", "On" }, { NULL, NULL }},
+				"disabled" },
+			{ MesenSnesHideBgLayer4, "Enhancements - SNES Hide BG Layer 4", "Hide BG Layer 4", "Hide SNES background layer 4", NULL, "enhancements",
+				{{ "disabled", "Off" }, { "enabled", "On" }, { NULL, NULL }},
+				"disabled" },
+			{ MesenSnesHideSprites, "Enhancements - SNES Hide Sprites", "Hide Sprites", "Hide SNES sprite rendering", NULL, "enhancements",
+				{{ "disabled", "Off" }, { "enabled", "On" }, { NULL, NULL }},
+				"disabled" },
+			{ MesenSnesRemoveSpriteLimit, "Enhancements - SNES Remove Sprite Limit", "Remove Sprite Limit", "Remove the SNES sprite limit", NULL, "enhancements",
+				{{ "disabled", "Off" }, { "enabled", "On" }, { NULL, NULL }},
+				"disabled" },
+			{ MesenSnesForceFixedResolution, "Video - SNES Force Fixed Resolution", "Force Fixed Resolution", "Force a fixed SNES resolution", NULL, "video",
+				{{ "disabled", "Off" }, { "enabled", "On" }, { NULL, NULL }},
+				"disabled" },
+			{ MesenSnesDisableFrameSkipping, "System - SNES Disable Frame Skipping", "Disable Frame Skipping", "Disable SNES frame skipping", NULL, "system",
+				{{ "disabled", "Off" }, { "enabled", "On" }, { NULL, NULL }},
+				"disabled" },
+			{ MesenSnesEnableStrictBoardMappings, "System - SNES Strict Board Mappings", "Strict Board Mappings", "Use strict SNES board mappings", NULL, "system",
+				{{ "disabled", "Off" }, { "enabled", "On" }, { NULL, NULL }},
+				"disabled" },
+			{ MesenSnesRandomizePowerOnState, "System - SNES Randomize Power-On State", "Randomize Power-On", "Randomize the SNES power-on state", NULL, "system",
+				{{ "disabled", "Off" }, { "enabled", "On" }, { NULL, NULL }},
+				"disabled" },
+
+			// Game Boy options
+			{ MesenGameboyModel, "System - Game Boy Model", "Game Boy Model", "Select the Game Boy model to emulate", NULL, "system",
+				{{ "Auto (Best)", "Auto (Best)" }, { "Auto (GBC)", "Auto (GBC)" }, { "Auto (SGB)", "Auto (SGB)" }, { "Auto (GB)", "Auto (GB)" }, { "Game Boy", "Game Boy" }, { "Game Boy Color", "Game Boy Color" }, { "Super Game Boy", "Super Game Boy" }, { NULL, NULL }},
+				"Auto (GBC)" },
+			{ MesenGameboyBlendFrames, "Video - Game Boy Blend Frames", "Blend Frames", "Blend Game Boy frames for a smoother image", NULL, "video",
+				{{ "enabled", "On" }, { "disabled", "Off" }, { NULL, NULL }},
+				"enabled" },
+			{ MesenGameboyAdjustColors, "Video - Game Boy Adjust Colors", "Adjust Colors", "Enable Game Boy color correction", NULL, "video",
+				{{ "enabled", "On" }, { "disabled", "Off" }, { NULL, NULL }},
+				"enabled" },
+			{ MesenGameboyDisableBackground, "Enhancements - Game Boy Disable Background", "Disable Background", "Disable Game Boy background rendering", NULL, "enhancements",
+				{{ "disabled", "Off" }, { "enabled", "On" }, { NULL, NULL }},
+				"disabled" },
+			{ MesenGameboyDisableSprites, "Enhancements - Game Boy Disable Sprites", "Disable Sprites", "Disable Game Boy sprite rendering", NULL, "enhancements",
+				{{ "disabled", "Off" }, { "enabled", "On" }, { NULL, NULL }},
+				"disabled" },
+			{ MesenGameboyRemoveSpriteLimit, "Enhancements - Game Boy Remove Sprite Limit", "Remove Sprite Limit", "Remove the Game Boy sprite limit", NULL, "enhancements",
+				{{ "disabled", "Off" }, { "enabled", "On" }, { NULL, NULL }},
+				"disabled" },
+			{ MesenGameboyHideSgbBorders, "Video - Game Boy Hide SGB Borders", "Hide SGB Borders", "Hide Super Game Boy borders", NULL, "video",
+				{{ "disabled", "Off" }, { "enabled", "On" }, { NULL, NULL }},
+				"disabled" },
+
+			// GBA options
+			{ MesenGbaSkipBootScreen, "System - GBA Skip Boot Screen", "Skip Boot Screen", "Skip the GBA boot screen", NULL, "system",
+				{{ "disabled", "Off" }, { "enabled", "On" }, { NULL, NULL }},
+				"disabled" },
+			{ MesenGbaBlendFrames, "Video - GBA Blend Frames", "Blend Frames", "Blend GBA frames", NULL, "video",
+				{{ "enabled", "On" }, { "disabled", "Off" }, { NULL, NULL }},
+				"enabled" },
+			{ MesenGbaAdjustColors, "Video - GBA Adjust Colors", "Adjust Colors", "Enable GBA color correction", NULL, "video",
+				{{ "enabled", "On" }, { "disabled", "Off" }, { NULL, NULL }},
+				"enabled" },
+			{ MesenGbaDisableSprites, "Enhancements - GBA Disable Sprites", "Disable Sprites", "Disable GBA sprite rendering", NULL, "enhancements",
+				{{ "disabled", "Off" }, { "enabled", "On" }, { NULL, NULL }},
+				"disabled" },
+			{ MesenGbaDisableBackground, "Enhancements - GBA Disable Background", "Disable Background", "Disable GBA background rendering", NULL, "enhancements",
+				{{ "disabled", "Off" }, { "enabled", "On" }, { NULL, NULL }},
+				"disabled" },
+			{ MesenGbaHideBgLayer1, "Enhancements - GBA Hide BG Layer 1", "Hide BG Layer 1", "Hide GBA background layer 1", NULL, "enhancements",
+				{{ "disabled", "Off" }, { "enabled", "On" }, { NULL, NULL }},
+				"disabled" },
+			{ MesenGbaHideBgLayer2, "Enhancements - GBA Hide BG Layer 2", "Hide BG Layer 2", "Hide GBA background layer 2", NULL, "enhancements",
+				{{ "disabled", "Off" }, { "enabled", "On" }, { NULL, NULL }},
+				"disabled" },
+			{ MesenGbaHideBgLayer3, "Enhancements - GBA Hide BG Layer 3", "Hide BG Layer 3", "Hide GBA background layer 3", NULL, "enhancements",
+				{{ "disabled", "Off" }, { "enabled", "On" }, { NULL, NULL }},
+				"disabled" },
+			{ MesenGbaHideBgLayer4, "Enhancements - GBA Hide BG Layer 4", "Hide BG Layer 4", "Hide GBA background layer 4", NULL, "enhancements",
+				{{ "disabled", "Off" }, { "enabled", "On" }, { NULL, NULL }},
+				"disabled" },
+			{ MesenGbaDisableFrameSkipping, "System - GBA Disable Frame Skipping", "Disable Frame Skipping", "Disable GBA frame skipping", NULL, "system",
+				{{ "disabled", "Off" }, { "enabled", "On" }, { NULL, NULL }},
+				"disabled" },
+			{ MesenGbaSaveType, "System - GBA Save Type", "Save Type", "Select the GBA save type", NULL, "system",
+				{{ "Auto Detect", "Auto Detect" }, { "None", "None" }, { "SRAM", "SRAM" }, { "EEPROM 512", "EEPROM 512" }, { "EEPROM 8192", "EEPROM 8192" }, { "Flash 64", "Flash 64" }, { "Flash 128", "Flash 128" }, { NULL, NULL }},
+				"Auto Detect" },
+			{ MesenGbaRtcType, "System - GBA RTC Type", "RTC Type", "Select the GBA RTC emulation mode", NULL, "system",
+				{{ "Auto Detect", "Auto Detect" }, { "Enabled", "Enabled" }, { "Disabled", "Disabled" }, { NULL, NULL }},
+				"Auto Detect" },
+
+			// PC Engine options
+			{ MesenPceConsoleType, "System - PCE Console Type", "Console Type", "Select the PC Engine console model", NULL, "system",
+				{{ "Auto", "Auto" }, { "PC Engine", "PC Engine" }, { "SuperGrafx", "SuperGrafx" }, { "TurboGrafx", "TurboGrafx" }, { NULL, NULL }},
+				"Auto" },
+			{ MesenPceCdRomType, "System - PCE CD-ROM Type", "CD-ROM Type", "Select the PCE CD-ROM emulation type", NULL, "system",
+				{{ "CD-ROM", "CD-ROM" }, { "Super CD-ROM", "Super CD-ROM" }, { "Arcade", "Arcade" }, { NULL, NULL }},
+				"Arcade" },
+			{ MesenPceDisableSprites, "Enhancements - PCE Disable Sprites", "Disable Sprites", "Disable sprite rendering on PCE", NULL, "enhancements",
+				{{ "disabled", "Off" }, { "enabled", "On" }, { NULL, NULL }},
+				"disabled" },
+			{ MesenPceDisableSpritesVdc2, "Enhancements - PCE Disable VDC2 Sprites", "Disable VDC2 Sprites", "Disable VDC2 sprite rendering", NULL, "enhancements",
+				{{ "disabled", "Off" }, { "enabled", "On" }, { NULL, NULL }},
+				"disabled" },
+			{ MesenPceDisableBackground, "Enhancements - PCE Disable Background", "Disable Background", "Disable background rendering on PCE", NULL, "enhancements",
+				{{ "disabled", "Off" }, { "enabled", "On" }, { NULL, NULL }},
+				"disabled" },
+			{ MesenPceDisableBackgroundVdc2, "Enhancements - PCE Disable VDC2 Background", "Disable VDC2 Background", "Disable VDC2 background rendering", NULL, "enhancements",
+				{{ "disabled", "Off" }, { "enabled", "On" }, { NULL, NULL }},
+				"disabled" },
+			{ MesenPceRemoveSpriteLimit, "Enhancements - PCE Remove Sprite Limit", "Remove Sprite Limit", "Remove the PCE sprite limit", NULL, "enhancements",
+				{{ "disabled", "Off" }, { "enabled", "On" }, { NULL, NULL }},
+				"disabled" },
+			{ MesenPceDisableFrameSkipping, "System - PCE Disable Frame Skipping", "Disable Frame Skipping", "Disable PCE frame skipping", NULL, "system",
+				{{ "disabled", "Off" }, { "enabled", "On" }, { NULL, NULL }},
+				"disabled" },
+			{ MesenPceForceFixedResolution, "Video - PCE Force Fixed Resolution", "Force Fixed Resolution", "Force a fixed pixel resolution", NULL, "video",
+				{{ "disabled", "Off" }, { "enabled", "On" }, { NULL, NULL }},
+				"disabled" },
+			{ MesenPceUseHuc6280Audio, "Audio - PCE Use HuC6280 Audio", "Use HuC6280 Audio", "Use the HuC6280 audio engine", NULL, "audio",
+				{{ "enabled", "On" }, { "disabled", "Off" }, { NULL, NULL }},
+				"enabled" },
+
+			// SMS options
+			{ MesenSmsUseSgPalette, "Video - SMS Use SG Palette", "Use SG Palette", "Use the Sega Game Gear palette", NULL, "video",
+				{{ "disabled", "Off" }, { "enabled", "On" }, { NULL, NULL }},
+				"disabled" },
+			{ MesenSmsGameGearBlendFrames, "Video - SMS GG Blend Frames", "GG Blend Frames", "Blend frames on the Game Gear display", NULL, "video",
+				{{ "enabled", "On" }, { "disabled", "Off" }, { NULL, NULL }},
+				"enabled" },
+			{ MesenSmsDisableSprites, "Enhancements - SMS Disable Sprites", "Disable Sprites", "Disable sprite rendering on SMS", NULL, "enhancements",
+				{{ "disabled", "Off" }, { "enabled", "On" }, { NULL, NULL }},
+				"disabled" },
+			{ MesenSmsDisableBackground, "Enhancements - SMS Disable Background", "Disable Background", "Disable background rendering on SMS", NULL, "enhancements",
+				{{ "disabled", "Off" }, { "enabled", "On" }, { NULL, NULL }},
+				"disabled" },
+			{ MesenSmsRemoveSpriteLimit, "Enhancements - SMS Remove Sprite Limit", "Remove Sprite Limit", "Remove the SMS sprite limit", NULL, "enhancements",
+				{{ "disabled", "Off" }, { "enabled", "On" }, { NULL, NULL }},
+				"disabled" },
+			{ MesenSmsFmAudio, "Audio - SMS FM Audio", "FM Audio", "Enable FM audio on SMS systems", NULL, "audio",
+				{{ "enabled", "On" }, { "disabled", "Off" }, { NULL, NULL }},
+				"enabled" },
+
+			// WonderSwan options
+			{ MesenWsModel, "System - WS Model", "Model", "Select the WonderSwan model", NULL, "system",
+				{{ "Auto", "Auto" }, { "Monochrome", "Monochrome" }, { "Color", "Color" }, { "SwanCrystal", "SwanCrystal" }, { "PocketChallenge", "PocketChallenge" }, { NULL, NULL }},
+				"Auto" },
+			{ MesenWsAutoRotate, "Video - WS Auto Rotate", "Auto Rotate", "Rotate the WonderSwan display automatically", NULL, "video",
+				{{ "disabled", "Off" }, { "enabled", "On" }, { NULL, NULL }},
+				"disabled" },
+			{ MesenWsBlendFrames, "Video - WS Blend Frames", "Blend Frames", "Blend WonderSwan frames", NULL, "video",
+				{{ "disabled", "Off" }, { "enabled", "On" }, { NULL, NULL }},
+				"disabled" },
+			{ MesenWsLcdAdjustColors, "Video - WS LCD Adjust Colors", "Adjust Colors", "Adjust colors for the WonderSwan LCD", NULL, "video",
+				{{ "disabled", "Off" }, { "enabled", "On" }, { NULL, NULL }},
+				"disabled" },
+			{ MesenWsLcdShowIcons, "Video - WS LCD Show Icons", "Show Icons", "Show the WonderSwan status icons", NULL, "video",
+				{{ "disabled", "Off" }, { "enabled", "On" }, { NULL, NULL }},
+				"disabled" },
+			{ MesenWsAudioMode, "Audio - WS Audio Mode", "Audio Mode", "Select the WonderSwan audio output mode", NULL, "audio",
+				{{ "Headphones", "Headphones" }, { "Speakers", "Speakers" }, { NULL, NULL }},
+				"Headphones" },
+			{ MesenWsDisableSprites, "Enhancements - WS Disable Sprites", "Disable Sprites", "Disable WonderSwan sprite rendering", NULL, "enhancements",
+				{{ "disabled", "Off" }, { "enabled", "On" }, { NULL, NULL }},
+				"disabled" },
+
 			// Input category
 			{ MesenControllerTurboSpeed, "Input - Controller Turbo Speed", "Turbo Speed", "Turbo button speed", NULL, "input",
 				{{ "Fast", "Fast" }, { "Very Fast", "Very Fast" }, { "Disabled", "Disabled" }, { "Slow", "Slow" }, { "Normal", "Normal" }, { NULL, NULL }},
@@ -589,6 +961,7 @@ extern "C" {
 		};
 
 		env_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_V2, &core_opt_info);
+		UpdateCoreOptionDisplay();
 
 		static constexpr struct retro_controller_description pads1[] = {
 			{ "Auto", DEVICE_AUTO },
@@ -2105,6 +2478,7 @@ void libretro_probe_inputs(const char* tag)
 			update_core_controllers();
 			
 			update_input_descriptors();
+			UpdateCoreOptionDisplay();
 
 			// Compute a safe save state size to report to the frontend
 			std::stringstream ss;
