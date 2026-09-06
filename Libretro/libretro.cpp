@@ -655,7 +655,7 @@ extern "C" {
 
 		static const struct retro_system_content_info_override content_overrides[] = {
 			{
-				"nes|fds|unf|unif", /* extensions */
+				"nes|fds|unf|unif|sfc|smc|gb|gbc|gba|pce|sgx|sms|gg|ws|wsc", /* extensions */
 				false,              /* need_fullpath */
 				false               /* persistent_data */
 			},
@@ -1692,8 +1692,8 @@ void libretro_probe_inputs(const char* tag)
 				smsCfg.Port1.Type = (_inputDevices[0] == DEVICE_GAMEPAD) ? ControllerType::SmsController : ControllerType::None;
 				smsCfg.Port2.Type = (_inputDevices[1] == DEVICE_GAMEPAD) ? ControllerType::SmsController : ControllerType::None;
 				for(int i = 0; i < 4; i++) {
-                smsCfg.ChannelVolumes[i] = 100;
-            }
+					smsCfg.ChannelVolumes[i] = 100;
+				}
 				_emu->GetSettings()->SetSmsConfig(smsCfg);
 				break;
 			}
@@ -2044,23 +2044,25 @@ void libretro_probe_inputs(const char* tag)
 					_emu->GetSettings()->SetSmsConfig(cfg);
 					break;
 				}
-case ConsoleType::PcEngine: {
-// Initialize PCE config with default palette (RGB333)
-// PCE uses a 9-bit color space (RGB333 - 3 bits each for R, G, B)
-PcEngineConfig cfg = _emu->GetSettings()->GetPcEngineConfig();
-// Generate default RGB333 palette if not already set
-if(cfg.Palette[0] == 0) {  // If palette is all zeros, initialize it
-for(int rgb333 = 0; rgb333 < 512; rgb333++) {
-// Extract 3-bit R, G, B components and scale to 8-bit
-uint8_t r = ((rgb333 >> 6) & 0x7) * 255 / 7;  // bits 8,7,6
-uint8_t g = ((rgb333 >> 3) & 0x7) * 255 / 7;  // bits 5,4,3
-uint8_t b = ((rgb333 >> 0) & 0x7) * 255 / 7;  // bits 2,1,0
-cfg.Palette[rgb333] = 0xFF000000 | (r << 16) | (g << 8) | b;
-}
-}
-_emu->GetSettings()->SetPcEngineConfig(cfg);
-break;
-}
+				case ConsoleType::PcEngine: {
+					// Initialize PCE config with default palette (RGB333)
+					// PCE uses a 9-bit color space (RGB333 - 3 bits each for R, G, B)
+					PcEngineConfig cfg = _emu->GetSettings()->GetPcEngineConfig();
+					// Generate default RGB333 palette if not already set
+					if(cfg.Palette[0] == 0) {  // If palette is all zeros, initialize it
+						for(int rgb333 = 0; rgb333 < 512; rgb333++) {
+							// Extract 3-bit R, G, B components and scale to 8-bit
+							// Values for red and green channels are swapped, but it
+							// works, so whatever. TODO/FIXME
+							uint8_t r = ((rgb333 >> 3) & 0x7) * 255 / 7;  // bits 8,7,6
+							uint8_t g = ((rgb333 >> 6) & 0x7) * 255 / 7;  // bits 5,4,3
+							uint8_t b = ((rgb333 >> 0) & 0x7) * 255 / 7;  // bits 2,1,0
+							cfg.Palette[rgb333] = 0xFF000000 | (r << 16) | (g << 8) | b;
+						}
+					}
+				_emu->GetSettings()->SetPcEngineConfig(cfg);
+				break;
+			}
 				default:
 					break;
 			}
@@ -2351,28 +2353,27 @@ break;
 				}
 			}
 
-#ifdef LIBRETRO
 			// Tell the emulator to allow SGB for the next Gameboy console that is created
 			if(_emu) _emu->SetAllowSgbForNextLoad(true);
-	// Temporarily prefer SGB model when selecting the Gameboy model so SGB will be chosen
-	GameboyConfig _libretro_prevGbCfg;
-	bool _libretro_havePrevGbCfg = false;
-	if(_emu) {
-		_libretro_prevGbCfg = _emu->GetSettings()->GetGameboyConfig();
-		_libretro_havePrevGbCfg = true;
-		GameboyConfig tmpGbCfg = _libretro_prevGbCfg;
-		tmpGbCfg.Model = GameboyModel::AutoFavorSgb;
-		_emu->GetSettings()->SetGameboyConfig(tmpGbCfg);
-	}
-#endif
-	bool result = retro_load_game(gbInfo);
-	logSgbDebugf("retro_load_game returned %s for GB ROM %s", result ? "success" : "failure", gbInfo->path ? gbInfo->path : "(null)");
-#ifdef LIBRETRO
-	// Restore previous Gameboy config
-	if(_emu && _libretro_havePrevGbCfg) {
-		_emu->GetSettings()->SetGameboyConfig(_libretro_prevGbCfg);
-	}
-#endif
+			// Temporarily prefer SGB model when selecting the Gameboy model so SGB will be chosen
+			GameboyConfig _libretro_prevGbCfg;
+			bool _libretro_havePrevGbCfg = false;
+			if(_emu) {
+				_libretro_prevGbCfg = _emu->GetSettings()->GetGameboyConfig();
+				_libretro_havePrevGbCfg = true;
+				GameboyConfig tmpGbCfg = _libretro_prevGbCfg;
+				tmpGbCfg.Model = GameboyModel::AutoFavorSgb;
+				_emu->GetSettings()->SetGameboyConfig(tmpGbCfg);
+			}
+
+			bool result = retro_load_game(gbInfo);
+			logSgbDebugf("retro_load_game returned %s for GB ROM %s", result ? "success" : "failure", gbInfo->path ? gbInfo->path : "(null)");
+
+			// Restore previous Gameboy config
+			if(_emu && _libretro_havePrevGbCfg) {
+				_emu->GetSettings()->SetGameboyConfig(_libretro_prevGbCfg);
+			}
+
 
 			if(customFirmwareInstalled) {
 				restoreSgbFirmware(firmwarePath, backupPath);
@@ -2405,12 +2406,10 @@ break;
 
 	RETRO_API void retro_get_system_info(struct retro_system_info *info)
 	{
-		// TODO: Replace with real version string when available
-   	static std::string version = "2.0.0";
-   	_mesenVersion = version;
-		//_mesenVersion = EmulationSettings::GetMesenVersionString();
-
-		// Set library name based on loaded console
+//		_mesenVersion = EmuSettings::GetVersionString();
+/*
+		// Set library name based on loaded console. This pushes configs into
+		// separate folders for each sub-core
 		static std::string libraryName = "Mesen2";
 		if(_console) {
 			ConsoleType type = _console->GetConsoleType();
@@ -2425,11 +2424,9 @@ break;
 				default: libraryName = "Mesen2"; break;
 			}
 		}
-
-		info->library_name = libraryName.c_str();
-		info->library_version = _mesenVersion.c_str();
-		// need_fullpath is required since HdPacks are
-		// identified via the rom file name
+*/
+		info->library_name = "Mesen2";
+		info->library_version = "2.0.0";
 		info->need_fullpath = true;
 		
 		// Set valid extensions based on loaded console
@@ -2506,9 +2503,24 @@ break;
 		
 		info->geometry.base_width = width;
 		info->geometry.base_height = height;
-		info->geometry.max_width = 256 * 8 * 4; // generous max (8x scale + 4x HD)
-		info->geometry.max_height = 240 * 8 * 4;
-		info->geometry.aspect_ratio = 4.0f / 3.0f;
+		// TODO/FIXME: set these to something bigger when HD packs are implemented
+		info->geometry.max_width = 512;//256 * 8 * 4; // generous max (8x scale + 4x HD)
+		info->geometry.max_height = 480;//240 * 8 * 4;
+		float system_ar;
+		if(_console) {
+			ConsoleType type = _console->GetConsoleType();
+			switch(type) {
+				case ConsoleType::Nes: system_ar = 1.306; break;
+				case ConsoleType::Snes: system_ar = 64.0f / 49.0f; break;
+				case ConsoleType::Gameboy: system_ar = 10.0f / 9.0f; break;
+				case ConsoleType::Gba: system_ar = 3.0f / 2.0f; break;
+				case ConsoleType::PcEngine: system_ar = 4.0f / 3.0f; break;
+				case ConsoleType::Sms: system_ar = 4.0f / 3.0f; break;
+				case ConsoleType::Ws: system_ar = 14.0f / 9.0f; break;
+				default: system_ar = 4.0f / 3.0f; break;
+			}
+		}
+		info->geometry.aspect_ratio = system_ar;
 		
 		// Get FPS from console, or use default
 		double fps = 60.0988; // NES NTSC default
