@@ -89,11 +89,11 @@ libretro-build-windows-x64:
   image: $CI_SERVER_HOST:5050/libretro-infrastructure/libretro-build-mxe-win-cross-cores:gcc14
 
 # Windows 32-bit
-#libretro-build-windows-i686:
-#  extends:
-#    - .libretro-windows-i686-mingw-make-default
-#    - .core-defs
-#  image: $CI_SERVER_HOST:5050/libretro-infrastructure/libretro-build-mxe-win-cross-cores:gcc14
+libretro-build-windows-i686:
+  extends:
+    - .libretro-windows-i686-mingw-make-default
+    - .core-defs
+  image: $CI_SERVER_HOST:5050/libretro-infrastructure/libretro-build-mxe-win-cross-cores:gcc14
 
 # Linux 64-bit
 libretro-build-linux-x64:
@@ -106,10 +106,14 @@ libretro-build-linux-x64:
     CXX: /usr/bin/g++-14
 
 # Linux 32-bit
-#libretro-build-linux-i686:
-#  extends:
-#    - .libretro-linux-i686-make-default
-#    - .core-defs
+libretro-build-linux-i686:
+  extends:
+    - .libretro-linux-i686-make-default
+    - .core-defs
+  image: $CI_SERVER_HOST:5050/libretro-infrastructure/libretro-build-i386-ubuntu:backports
+  variables:
+    CC: /usr/bin/gcc-14
+    CXX: /usr/bin/g++-14
 
 # Linux 64-bit (ARM)
 libretro-build-linux-aarch64:
@@ -154,10 +158,10 @@ android-x86_64:
     - .core-defs
 
 # Android 32-bit x86
-#android-x86:
- # extends:
- #   - .libretro-android-jni-x86
- #   - .core-defs
+android-x86:
+  extends:
+    - .libretro-android-jni-x86
+    - .core-defs
 
 # iOS
 libretro-build-ios-arm64:

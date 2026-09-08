@@ -110,6 +110,17 @@ ifneq ($(filter arm64% aarch64%,$(MACHINE)),)
 	MESENPLATFORM := $(MESENOS)-arm64
 endif
 
+#spng turns its x86 SIMD paths on for 32-bit x86 as well, and there they do not
+#even parse: immintrin.h reaches avx512bf16intrin.h, which asks for _Float16 and
+#__bf16, and gcc answers "'_Float16' is not supported on this target" because a
+#plain i686 has no SSE2. PNG decoding only carries screenshots and the like, so
+#dropping the optimisation costs less than moving the whole core's baseline up.
+#The target triple cannot answer the question - a 64-bit gcc driven with -m32
+#keeps reporting its own - so ask the preprocessor.
+ifneq ($(shell echo | $(CXX) -E -dM - 2>/dev/null | grep -c __i386__),0)
+	MESENFLAGS += -DSPNG_DISABLE_OPT
+endif
+
 ifeq ($(DEBUG),0)
 	MESENFLAGS += -O3
 	ifeq ($(HAVE_LTO),1)
