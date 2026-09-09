@@ -407,6 +407,33 @@ uint32_t wavebeamPalette[0x40] { 0xFF6B6B6B, 0xFF001B88, 0xFF21009A, 0xFF40008C,
 		return ConsoleType::Nes;
 	}
 
+	static string GetSaveSubfolderForGamePath(const string& gamePath)
+	{
+		string extension = FolderUtilities::GetExtension(gamePath);
+		if(extension == ".nes" || extension == ".fds" || extension == ".unf" || extension == ".unif") {
+			return "Mesen2-NES";
+		}
+		if(extension == ".sfc" || extension == ".smc") {
+			return "Mesen2-SNES";
+		}
+		if(extension == ".gb" || extension == ".gbc" || extension == ".gbx") {
+			return "Mesen2-Gameboy";
+		}
+		if(extension == ".gba") {
+			return "Mesen2-GBA";
+		}
+		if(extension == ".pce" || extension == ".sgx" || extension == ".cue" || extension == ".hes") {
+			return "Mesen2-PCEngine";
+		}
+		if(extension == ".sms" || extension == ".gg") {
+			return "Mesen2-SMS";
+		}
+		if(extension == ".ws" || extension == ".wsc") {
+			return "Mesen2-Wonderswan";
+		}
+		return "Mesen2";
+	}
+
 	static bool IsOptionVisibleForCurrentConsole(const char* key)
 	{
 		if(!key) {
@@ -2230,12 +2257,12 @@ void libretro_probe_inputs(const char* tag)
 	RETRO_API bool retro_load_game(const struct retro_game_info *game)
 	{
 		logSgbDebugf("retro_load_game called: path=%s", game && game->path ? game->path : "(null)");
-		char *saveFolder;
-		char *systemFolder;
+		char *saveFolder = nullptr;
+		char *systemFolder = nullptr;
 		if(!env_cb(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &systemFolder) || !systemFolder)
 			return false;
 
-		if(!env_cb(RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY, &saveFolder)) {
+		if(!env_cb(RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY, &saveFolder) || !saveFolder) {
 			logMessage(RETRO_LOG_ERROR, "Could not find save directory.\n");
 		}
 
@@ -2245,25 +2272,6 @@ void libretro_probe_inputs(const char* tag)
 			return false;
 		}
 
-		//Expect the following structure:
-		// /system/disksys.rom
-		// /system/HdPacks/*
-		// /system/<BIOS files>
-		// /saves/*.sav
-		FolderUtilities::SetHomeFolder(systemFolder);
-		// SetFolderOverrides signature expects 4 strings (save, savestate, screenshot, firmware).
-		// Point firmware lookups at the system directory root.
-		FolderUtilities::SetFolderOverrides(saveFolder, std::string(""), std::string(""), string(systemFolder));
-		update_settings();
-
-		// Controller/Settings API changed; skip initial controller setup here
-		//Plug in 2 standard controllers by default, game database will switch the controller types for recognized games
-/*		_console->GetSettings()->SetMasterVolume(10.0);
-		_console->GetSettings()->SetControllerType(0, ControllerType::StandardController);
-		_console->GetSettings()->SetControllerType(1, ControllerType::StandardController);
-		_console->GetSettings()->SetControllerType(2, ControllerType::None);
-		_console->GetSettings()->SetControllerType(3, ControllerType::None);
-*/
 		// Attempt to fetch extended game info
 		const struct retro_game_info_ext *gameExt = NULL;
 		const void *gameData = NULL;
@@ -2298,6 +2306,30 @@ void libretro_probe_inputs(const char* tag)
 			// struct
 			gamePath = game->path;
 		}
+
+		// Expect the following structure:
+		// /system/disksys.rom
+		// /system/HdPacks/*
+		// /system/<BIOS files>
+		// /saves/Mesen2-*/<save files>
+		FolderUtilities::SetHomeFolder(systemFolder);
+		string saveFolderOverride = saveFolder ? string(saveFolder) : string();
+		if(!saveFolderOverride.empty()) {
+			saveFolderOverride = FolderUtilities::CombinePath(saveFolderOverride, GetSaveSubfolderForGamePath(gamePath));
+		}
+		// Keep configs/firmware rooted in the shared system directory, but restore
+		// per-subcore save separation by overriding only the save folder.
+		FolderUtilities::SetFolderOverrides(saveFolderOverride, std::string(""), std::string(""), string(systemFolder));
+		update_settings();
+
+		// Controller/Settings API changed; skip initial controller setup here
+		//Plug in 2 standard controllers by default, game database will switch the controller types for recognized games
+/*		_console->GetSettings()->SetMasterVolume(10.0);
+		_console->GetSettings()->SetControllerType(0, ControllerType::StandardController);
+		_console->GetSettings()->SetControllerType(1, ControllerType::StandardController);
+		_console->GetSettings()->SetControllerType(2, ControllerType::None);
+		_console->GetSettings()->SetControllerType(3, ControllerType::None);
+*/
 
 /*		// Load content
 		VirtualFile romData(gameData, gameSize, gamePath);
